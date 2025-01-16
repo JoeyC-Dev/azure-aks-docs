@@ -12,10 +12,10 @@ ms.date: 11/26/2024
 # Upgrade Azure Kubernetes Service (AKS) IPAM modes and Dataplane Technology
 Since there are always new IP assignment management (IPAM) modes and dataplane technology supporting Azure Kubernetes Service (AKS), it's inevitable to go through situations that existing AKS clusters need to upgrade to newer IPAM modes and dataplane technology to access the latest features and supportability. This article provides guidance on upgrading an existing AKS cluster to use Azure CNI overlay for IPAM mode and Azure CNI powered by Cilium as its dataplane.
 
-## Upgrade an existing cluster to Azure CNI Overlay
+## Upgrade an existing Kubenet or Azure CNI Node Subnet cluster to Azure CNI Overlay
 
 > [!NOTE]
-> You can update an existing Azure CNI cluster to Overlay if the cluster meets the following criteria:
+> You can update an existing kubenet or Azure CNI Node Subnet cluster to Overlay if the cluster meets the following criteria:
 >
 > - The cluster is on Kubernetes version 1.22+.
 > - Doesn't use the dynamic pod IP allocation feature.
@@ -35,9 +35,9 @@ Since there are always new IP assignment management (IPAM) modes and dataplane t
 
 The upgrade process triggers each node pool to be re-imaged simultaneously. Upgrading each node pool separately to Overlay isn't supported. Any disruptions to cluster networking are similar to a node image upgrade or Kubernetes version upgrade where each node in a node pool is re-imaged.
 
-### Azure CNI Cluster Upgrade
+### Azure CNI Node Subnet Cluster Upgrade
 
-Update an existing Azure CNI cluster to use Overlay using the [`az aks update`][az-aks-update] command.
+Update an existing Azure CNI Node Subnet cluster to use Overlay using the [`az aks update`][az-aks-update] command.
 
 ```azurecli-interactive
 clusterName="myOverlayCluster"
@@ -74,13 +74,14 @@ Since the cluster is already using a private CIDR for pods which doesn't overlap
 > When upgrading from Kubenet to CNI Overlay, the route table will no longer be required for pod routing. If the cluster is using a customer provided route table, the routes which were being used to direct pod traffic to the correct node will automatically be deleted during the migration operation. If the cluster is using a managed route table (the route table was created by AKS and lives in the node resource group) then that route table will be deleted as part of the migration.
 
 
-## Upgrade an existing cluster to Azure CNI Powered by Cilium
+## Upgrade an existing Azure CNI Overlay or Azure CNI for dynamic IP allocation cluster to Azure CNI Powered by Cilium
 
 > [!NOTE]
 > You can update an existing cluster to Azure CNI Powered by Cilium if the cluster meets the following criteria:
 >
 > - The cluster uses either [Azure CNI Overlay](./azure-cni-overlay.md) or [Azure CNI with dynamic IP allocation](./configure-azure-cni-dynamic-ip-allocation.md). This does **not** include [Azure CNI](./configure-azure-cni.md).
 > - The cluster does not have any Windows node pools.
+> - For existing clusters using [Kubenet](./configure-kubenet.md) or [Azure CNI Node Subnet](./configure-azure-cni.md), you need to upgrade the cluster to use Azure CNI Overlay first.
 > [!NOTE]
 > When enabling Cilium in a cluster with a different network policy engine (Azure NPM or Calico), the network policy engine will be uninstalled and replaced with Cilium. See [Uninstall Azure Network Policy Manager or Calico](./use-network-policies.md#uninstall-azure-network-policy-manager-or-calico) for more details.
 > [!WARNING]
